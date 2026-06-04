@@ -3,6 +3,8 @@
 A privacy-first personal finance dashboard for German bank CSV exports.
 Supports **DKB**, **ING-DiBa**, and **Sparkasse**.
 
+→ [kontoeinblick.de](https://kontoeinblick.de)
+
 ## Features
 
 - **Multi-bank CSV parsing** — DKB, ING-DiBa, Sparkasse auto-detected
