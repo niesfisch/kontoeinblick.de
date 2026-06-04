@@ -1,0 +1,17 @@
+Umsatzanzeige;Datei erstellt am: 01.06.2026 10:28
+
+IBAN;DE12 3456 7890 1234 5678 90
+Kontoname;Extra-Konto
+Bank;ING
+Kunde;Max Mustermann
+Zeitraum;01.01.2025 - 31.03.2025
+
+Sortierung;Datum absteigend
+
+In der CSV-Datei finden Sie alle bereits gebuchten Umsätze.
+
+Buchung;Wertstellungsdatum;Auftraggeber/Empfänger;Buchungstext;Verwendungszweck;Betrag;Währung
+01.03.2025;03.03.2025;;Wertpapierkauf;WP-ABRECHNUNG Kauf ISIN IE00B4L5Y983;-500,00;EUR
+01.03.2025;01.03.2025;MAX MUSTERMANN;Lastschrifteinzug;Sparplan ISIN IE00B4L5Y983;500,00;EUR
+02.01.2025;04.01.2025;;Wertpapierkauf;WP-ABRECHNUNG Kauf ISIN IE00B4L5Y983;-500,00;EUR
+02.01.2025;02.01.2025;MAX MUSTERMANN;Lastschrifteinzug;Sparplan ISIN IE00B4L5Y983;500,00;EUR

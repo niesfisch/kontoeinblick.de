@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kontoeinblick — Finanzübersicht</title>
+  <meta name="description" content="Kontoeinblick: Lade deine Bank-CSV hoch und visualisiere Einnahmen &amp; Ausgaben – Charts, Gruppen, Filter. Lokal im Browser, kein Tracking." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kontoeinblick.de/" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta property="og:title" content="Kontoeinblick — Finanzübersicht" />
+  <meta property="og:description" content="Lade deine Bank-CSV hoch und visualisiere Einnahmen &amp; Ausgaben. Lokal im Browser, kein Tracking." />
+  <meta property="og:url" content="https://kontoeinblick.de/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Kontoeinblick — Finanzübersicht" />
+  <meta name="twitter:description" content="Lade deine Bank-CSV hoch und visualisiere Einnahmen &amp; Ausgaben. Lokal im Browser, kein Tracking." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Kontoeinblick",
+    "url": "https://kontoeinblick.de/",
+    "description": "Browser-basierte Finanzübersicht. Bankdaten visualisieren – lokal, kein Tracking.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js CDN (pinned version, no tracking) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Mobile warning overlay ──────────────────────────────────────────── -->
+  <div id="mobile-warning" class="mobile-warning" style="display:none">
+    <div class="mobile-warning-card">
+      <div class="mobile-warning-icon">💻</div>
+      <p data-i18n="desktopHint">💻 Desktop empfohlen — das Dashboard ist für große Bildschirme optimiert.</p>
+      <button id="mobile-warning-dismiss" class="btn btn-primary" data-i18n="mobileDismiss">Verstanden, trotzdem öffnen</button>
+    </div>
+  </div>
+  <script>
+  (function(){
+    if (window.innerWidth < 768 && !sessionStorage.getItem('mobile-warning-dismissed')) {
+      document.getElementById('mobile-warning').style.display = 'flex';
+    }
+    document.getElementById('mobile-warning-dismiss').addEventListener('click', function(){
+      document.getElementById('mobile-warning').style.display = 'none';
+      try { sessionStorage.setItem('mobile-warning-dismissed', '1'); } catch(e){}
+    });
+  })();
+  </script>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#2563eb"/><circle cx="16" cy="16" r="12" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/><text x="16" y="20.5" text-anchor="middle" font-size="15" font-weight="700" font-family="sans-serif" fill="#92400e">€</text></svg></div>
+      Kontoeinblick
+    </div>
+    <div class="header-meta" id="header-meta">
+      <span id="bank-detected-hint" class="bank-detected-hint" style="display:none"></span>
+      <span id="header-iban" style="color:var(--text-muted);font-size:.8rem"></span>
+      <span id="header-period" style="color:var(--text-muted);font-size:.8rem"></span>
+      <span class="balance-badge" id="balance-badge"></span>
+    </div>
+    <div class="header-actions">
+      <button id="pdf-export-btn" class="btn btn-ghost btn-sm pdf-export-btn" style="display:none" data-i18n="pdfExportBtn">🖨 PDF</button>
+      <a class="bmc-btn bmc-btn-sm" href="https://www.paypal.me/marcelsauergmx" target="_blank" rel="noopener" data-i18n="headerDonateTip" data-i18n-attr="title" title="…">☕</a>
+      <span class="header-legals">
+        <a href="impressum.html" data-i18n="footerImprint">Impressum</a>
+        <span class="site-footer-sep">·</span>
+        <a href="datenschutz.html" data-i18n="footerPrivacy">Datenschutz</a>
+      </span>
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="de" data-i18n="langDe" data-i18n-attr="title" title="…">DE</button>
+        <button class="lang-btn" data-lang="en" data-i18n="langEn" data-i18n-attr="title" title="…">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── PDF Export Modal ───────────────────────────────────────────────── -->
+  <div id="pdf-modal-backdrop" class="pdf-modal-backdrop" style="display:none">
+    <div class="pdf-modal" role="dialog" aria-modal="true" aria-labelledby="pdf-modal-title">
+      <div class="pdf-modal-header">
+        <h2 id="pdf-modal-title" data-i18n="pdfModalTitle">PDF exportieren</h2>
+        <button class="pdf-modal-close" id="pdf-modal-close" aria-label="Schließen">×</button>
+      </div>
+      <p class="pdf-modal-desc" data-i18n="pdfModalDesc">Wähle die Abschnitte, die im PDF enthalten sein sollen.</p>
+      <div class="pdf-section-list" id="pdf-section-list">
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="kpi" checked />
+          <span class="pdf-section-icon">📊</span>
+          <span data-i18n="pdfSectionKpi">Kennzahlen (KPI-Karten)</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="chart-monthly" checked />
+          <span class="pdf-section-icon">📈</span>
+          <span data-i18n="pdfSectionChartMonthly">Monatliche Einnahmen vs. Ausgaben</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="chart-balance" checked />
+          <span class="pdf-section-icon">📉</span>
+          <span data-i18n="pdfSectionChartBalance">Kumulativer Cashflow</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="chart-merchants" checked />
+          <span class="pdf-section-icon">🏪</span>
+          <span data-i18n="pdfSectionChartMerchants">Top Gegenparteien</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="chart-largest" checked />
+          <span class="pdf-section-icon">⭐</span>
+          <span data-i18n="pdfSectionChartLargest">Größte Transaktionen</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="chart-month-amount" />
+          <span class="pdf-section-icon">📅</span>
+          <span data-i18n="pdfSectionChartMonthAmount">Betrag pro Monat</span>
+        </label>
+        <label class="pdf-section-item">
+          <input type="checkbox" name="pdf-section" value="tx-table" />
+          <span class="pdf-section-icon">📋</span>
+          <span data-i18n="pdfSectionTable">Transaktionstabelle (alle gefilterten Zeilen)</span>
+        </label>
+      </div>
+      <div class="pdf-modal-footer">
+        <label class="pdf-select-all-wrap">
+          <input type="checkbox" id="pdf-select-all" />
+          <span data-i18n="pdfSelectAll">Alle auswählen</span>
+        </label>
+        <div class="spacer"></div>
+        <button id="pdf-cancel-btn" class="btn btn-ghost" data-i18n="pdfCancel">Abbrechen</button>
+        <button id="pdf-print-btn" class="btn btn-primary" data-i18n="pdfPrint">🖨 Drucken / Als PDF speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Upload screen ──────────────────────────────────────────────────── -->
+  <div id="upload-screen">
+    <div class="upload-card">
+      <div class="upload-icon">🏦</div>
+      <h2 data-i18n="uploadHeading">Kontoeinblick</h2>
+      <p data-i18n="uploadDesc">Lade deinen Kontoauszug als CSV-Export hoch, um deine Finanzen zu visualisieren.</p>
+      <div class="supported-banks" id="supported-banks">
+        <span data-i18n="supportedBanksLabel">Unterstützte Banken:</span>
+        <span class="bank-pill">Deutsche Kreditbank (DKB)</span>
+        <span class="bank-pill">ING-DiBa</span>
+        <span class="bank-pill">Sparkasse</span>
+      </div>
+      <div class="privacy-notice" data-i18n="uploadPrivacy">🔒 Alle Daten werden lokal im Browser verarbeitet — es werden keine Daten übertragen.</div>
+      <div class="groups-upload-row">
+        <label class="groups-upload-label" for="groups-input">
+          <span>📋</span>
+          <span data-i18n="groupsUploadHint">Gruppen-JSON (optional)</span>
+        </label>
+        <input type="file" id="groups-input" accept=".json" />
+        <span id="groups-upload-name" class="groups-upload-name"></span>
+      </div>
+      <div style="text-align:right;margin-bottom:.25rem">
+        <button id="load-example-groups-btn" class="example-btn" data-i18n="loadExampleGroups">Beispielgruppen laden</button>
+      </div>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".csv" />
+        <label for="file-input">
+          <div style="font-size:1.8rem">📂</div>
+          <div style="font-weight:600;margin:.5rem 0" data-i18n="dropZoneTitle">CSV hier ablegen</div>
+          <div class="drop-text"><span data-i18n="dropZoneOr">oder</span> <span class="btn-link" data-i18n="dropZoneBrowse">Datei auswählen</span></div>
+        </label>
+      </div>
+      <div style="text-align:center;margin-top:.5rem">
+        <button id="load-example-csv-btn" class="example-btn" data-i18n="loadExampleCsv">Beispieldaten laden</button>
+      </div>
+    </div>
+    <p class="upload-hint" data-i18n="uploadHint">💡 Im Online-Banking deiner Bank: Konto → Umsätze → Export → CSV</p>
+    <p class="upload-hint desktop-hint" data-i18n="desktopHint">💻 Desktop empfohlen — das Dashboard ist für große Bildschirme optimiert.</p>
+    <p class="merge-hint"><a href="#merge-section" data-i18n="mergeHint">🔗 Mehrere CSV-Dateien zusammenführen (z. B. verschiedene Zeiträume) →</a></p>
+
+    <!-- Feature overview -->
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title" data-i18n="featureDashboardTitle">Dashboard &amp; Charts</div>
+        <div class="feature-desc" data-i18n="featureDashboardDesc">Einnahmen, Ausgaben und Guthaben auf einen Blick. Monats- und Tagesverlauf als interaktive Balkendiagramme. Zeitraum frei wählbar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title" data-i18n="featureSearchTitle">Suche &amp; Filter</div>
+        <div class="feature-desc" data-i18n="featureSearchDesc">Volltextsuche über Empfänger und Verwendungszweck — mit optionaler Groß-/Kleinschreibung. Filter nach Typ, Monat und Mindestbetrag kombinierbar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏷️</div>
+        <div class="feature-title" data-i18n="featureGroupsTitle">Gruppen &amp; Kategorien</div>
+        <div class="feature-desc" data-i18n="featureGroupsDesc">Erstelle Kategorien mit flexiblen Regeln (enthält, beginnt mit, …). Regeln per Klick oder Textauswahl direkt aus der Tabelle hinzufügen. Gruppen als JSON exportieren und wieder importieren.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">➕</div>
+        <div class="feature-title" data-i18n="featureQuickTitle">Schnell kategorisieren</div>
+        <div class="feature-desc" data-i18n="featureQuickDesc">In der Transaktionstabelle: <strong>Text markieren</strong> → Button erscheint → Gruppe wählen. Oder auf <strong>＋</strong> am Zeilenende klicken, um Empfänger / Verwendungszweck zuzuweisen.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title" data-i18n="featureMonthTitle">Betrag pro Monat</div>
+        <div class="feature-desc" data-i18n="featureMonthDesc">Monatsübersicht als einfaches Balken- oder <strong>gestapeltes Diagramm</strong> — im Stacked-Modus wird jede Kategorie-Regel als eigene farbige Schicht angezeigt.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🖱️</div>
+        <div class="feature-title" data-i18n="featureDetailTitle">Transaktionsdetails</div>
+        <div class="feature-desc" data-i18n="featureDetailDesc">Klick auf eine beliebige Zeile zeigt alle Felder als Popup: Buchungsdatum, IBAN, Mandatsreferenz, Gläubiger-ID und zugeordnete Gruppen.</div>
+      </div>
+      <div class="feature-card feature-card-action">
+        <div class="feature-icon">💡</div>
+        <div class="feature-title" data-i18n="featureRequestTitle">Feature-Wünsche &amp; Feedback</div>
+        <div class="feature-desc" data-i18n="featureRequestDesc">Du hast eine Idee oder vermisst eine Funktion? Schreib mir eine E-Mail – ich freue mich über Vorschläge und nehme jedes Feedback ernst.</div>
+        <a class="feature-request-inline" href="mailto:kontoeinblick@gmx.de?subject=Kontoeinblick%20Feedback" data-i18n="featureRequest">💡 Feature wünschen</a>
+      </div>
+    </div>
+
+    <!-- ── Tutorial / Hints (collapsible) ──────────────────────────────── -->
+    <details class="tutorial-section">
+      <summary class="tutorial-summary">
+        <span class="tutorial-summary-icon">💡</span>
+        <span data-i18n="tutorialHeading">Tutorial &amp; Hinweise</span>
+        <span class="tutorial-summary-chevron">▾</span>
+      </summary>
+      <div class="tutorial-content">
+        <div class="tutorial-block">
+          <h4 data-i18n="tutorialCsvTitle">📥 CSV aus dem Online-Banking herunterladen</h4>
+          <div class="tutorial-bank-grid">
+            <div class="tutorial-bank-card">
+              <strong>DKB</strong>
+              <p data-i18n="tutorialDkbDesc">Im DKB Online-Banking unter Konto → Umsätze → Export als CSV herunterladen.</p>
+              <a class="tutorial-link" href="https://www.dkb.de/banking" target="_blank" rel="noopener" data-i18n="tutorialDkbLink">→ Zum DKB Banking</a>
+            </div>
+            <div class="tutorial-bank-card">
+              <strong>ING-DiBa</strong>
+              <p data-i18n="tutorialIngDesc">Im ING Online-Banking unter Konto → Umsätze → Export als CSV herunterladen.</p>
+              <a class="tutorial-link" href="https://banking.ing.de" target="_blank" rel="noopener" data-i18n="tutorialIngLink">→ Zum ING Banking</a>
+            </div>
+            <div class="tutorial-bank-card">
+              <strong>Sparkasse</strong>
+              <p data-i18n="tutorialSparkasseDesc">Im Sparkasse Online-Banking unter Konto → Umsätze → Export als CSV herunterladen.</p>
+              <a class="tutorial-link" href="https://www.sparkasse.de" target="_blank" rel="noopener" data-i18n="tutorialSparkasseLink">→ Zum Sparkasse Banking</a>
+            </div>
+          </div>
+          <p class="tutorial-csv-hint" data-i18n="tutorialCsvDesktopHint">Hinweis: Der CSV-Export ist oft nur in der Desktop-Version des Online-Bankings verfügbar. In der mobilen App oder mobilen Webseite wird häufig nur ein PDF-Export angeboten.</p>
+        </div>
+        <div class="tutorial-block">
+          <h4 data-i18n="tutorialGroupsTitle">🏷️ Gruppen &amp; lokale Speicherung</h4>
+          <p data-i18n="tutorialGroupsDesc">Gruppen werden <strong>nur lokal im Browser</strong> gespeichert. Sobald du den Tab schließt, sind sie weg — daher: Exportiere deine Gruppen als JSON-Datei (<strong>„Gruppen exportieren“</strong>) und hebe sie sicher auf. Beim nächsten Mal lädst du die JSON-Datei einfach über die Schaltfläche auf der Startseite oder per <strong>„Gruppen importieren“</strong> im Dashboard wieder hoch.</p>
+          <p data-i18n="tutorialGroupsWorkflow"><strong>Empfohlener Workflow:</strong> Nach dem Anlegen deiner Gruppen → exportieren → JSON ablegen. Bei neuer Sitzung: CSV laden → Gruppen-JSON importieren → fertig.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- ── Merge card ──────────────────────────────────────────────────── -->
+    <div class="merge-section" id="merge-section">
+      <div class="merge-header">
+        <span class="merge-icon">🔗</span>
+        <span class="merge-title" data-i18n="mergeHeading">CSV-Dateien zusammenführen</span>
+      </div>
+      <p class="merge-desc" data-i18n="mergeDesc">Lade mehrere CSV-Dateien derselben Bank hoch, um sie zu einer Datei zusammenzuführen (z. B. verschiedene Zeiträume).</p>
+      <div class="merge-drop-zone" id="merge-drop-zone">
+        <input type="file" id="merge-file-input" accept=".csv" multiple />
+        <label for="merge-file-input">
+          <div class="merge-drop-icon">📂</div>
+          <div data-i18n="mergeDropHint">CSV-Dateien auswählen</div>
+        </label>
+      </div>
+      <div id="merge-file-list" class="merge-file-list"></div>
+      <div id="merge-status" class="merge-status"></div>
+      <div class="merge-actions" id="merge-actions" style="display:none">
+        <button id="merge-download-btn" class="btn btn-primary" data-i18n="mergeDownload">📥 Merged CSV herunterladen</button>
+        <button id="merge-use-btn" class="btn btn-ghost" data-i18n="mergeUseNow">Im Dashboard anzeigen</button>
+        <button id="merge-reset-btn" class="btn btn-ghost btn-sm" data-i18n="mergeReset">Zurücksetzen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Dashboard ──────────────────────────────────────────────────────── -->
+  <main>
+    <div id="dashboard">
+
+      <!-- Print-only header (injected content via JS before print) -->
+      <div class="print-header" id="print-header">
+        <h1 id="print-header-title">Kontoeinblick</h1>
+        <p id="print-header-sub"></p>
+        <div id="print-header-filters" class="print-header-filters"></div>
+      </div>
+
+      <!-- Filters bar -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label data-i18n="labelRange">Zeitraum</label>
+          <div class="range-pills">
+            <button class="range-pill active" data-range="all"    data-i18n="rangeAll">Alle</button>
+            <button class="range-pill"        data-range="cur"    data-i18n="rangeCur">Aktueller Monat</button>
+            <button class="range-pill"        data-range="prev"   data-i18n="rangePrev">Letzter Monat</button>
+            <button class="range-pill"        data-range="curyr"  data-i18n="rangeCuryr">Dieses Jahr</button>
+            <button class="range-pill"        data-range="prevyr" data-i18n="rangePrevyr">Letztes Jahr</button>
+            <button class="range-pill"        data-range="3m">3M</button>
+            <button class="range-pill"        data-range="6m">6M</button>
+            <button class="range-pill"        data-range="12m">12M</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label data-i18n="labelYear">Jahr</label>
+          <select id="year-sel"></select>
+        </div>
+        <div class="filter-group">
+          <label data-i18n="labelMonth">Monat</label>
+          <select id="month-sel"></select>
+        </div>
+        <div class="filter-group">
+          <label data-i18n="labelFrom">Von</label>
+          <input type="date" id="from-date" />
+        </div>
+        <div class="filter-group">
+          <label data-i18n="labelTo">Bis</label>
+          <input type="date" id="to-date" />
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="pdf-kpi" data-pdf-section="kpi">
+        <div class="kpi-card" id="kpi-income">
+          <div class="kpi-label" data-i18n="kpiIncome">Gesamteinnahmen</div>
+          <div class="kpi-value income">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+        <div class="kpi-card" id="kpi-expense">
+          <div class="kpi-label" data-i18n="kpiExpense">Gesamtausgaben</div>
+          <div class="kpi-value expense">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+        <div class="kpi-card" id="kpi-net">
+          <div class="kpi-label" data-i18n="kpiNet">Netto-Cashflow</div>
+          <div class="kpi-value neutral">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+        <div class="kpi-card" id="kpi-balance">
+          <div class="kpi-label" data-i18n="kpiBalance">Kontostand</div>
+          <div class="kpi-value neutral">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+        <div class="kpi-card" id="kpi-txcount">
+          <div class="kpi-label" data-i18n="kpiTxCount">Transaktionen</div>
+          <div class="kpi-value neutral">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+        <div class="kpi-card" id="kpi-savings">
+          <div class="kpi-label" data-i18n="kpiSavings">Sparquote</div>
+          <div class="kpi-value neutral">—</div>
+          <div class="kpi-sub">—</div>
+        </div>
+      </div>
+
+      <!-- Charts: Monthly overview + Balance trend -->
+      <div class="charts-grid">
+        <div class="chart-card full" id="pdf-chart-monthly" data-pdf-section="chart-monthly">
+          <h3><span data-i18n="chartMonthly">Monatliche Einnahmen vs. Ausgaben</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="chartMonthlyTip">...</span></span>
+            <button class="collapse-btn">▾</button>
+          </h3>
+          <div class="chart-wrap"><canvas id="monthly-chart" height="90"></canvas></div>
+        </div>
+
+        <div class="chart-card full" id="pdf-chart-balance" data-pdf-section="chart-balance">
+          <h3><span data-i18n="chartBalance">Kumulativer Cashflow</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="chartBalanceTip">...</span></span>
+            <button class="collapse-btn">▾</button>
+          </h3>
+          <div class="chart-subtitle" data-i18n="chartBalanceSub">Laufende Summe aller Ein-/Auszahlungen im gewählten Zeitraum</div>
+          <div class="chart-wrap"><canvas id="balance-chart" height="80"></canvas></div>
+        </div>
+
+        <!-- Top counterparties -->
+        <div class="chart-card full" id="pdf-chart-merchants" data-pdf-section="chart-merchants">
+          <h3><span data-i18n="chartMerchants">Top Gegenparteien: Einnahmen &amp; Ausgaben</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="chartMerchantsTip">...</span></span>
+            <button class="collapse-btn">▾</button>
+          </h3>
+          <div class="chart-wrap"><canvas id="top-merchants" height="90"></canvas></div>
+        </div>
+
+        <!-- Largest transactions -->
+        <div class="chart-card full" id="pdf-chart-largest" data-pdf-section="chart-largest">
+          <h3><span data-i18n="largestHeading">Größte Transaktionen</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="largestTip">...</span></span>
+            <button class="collapse-btn">▾</button>
+          </h3>
+          <div id="largest-tx-list" class="largest-tx-list"></div>
+        </div>
+      </div>
+
+      <!-- Group manager -->
+      <div class="table-card" id="group-manager">
+        <div class="table-header">
+          <h3><span data-i18n="groupsHeading">Gruppen</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="groupsTip">...</span></span>
+            <button class="collapse-btn">▾</button></h3>
+          <button id="group-undo-btn" class="btn btn-ghost btn-sm undo-redo-btn" title="Rückgängig (Ctrl+Z)" disabled>↩</button>
+          <button id="group-redo-btn" class="btn btn-ghost btn-sm undo-redo-btn" title="Wiederholen (Ctrl+Y)" disabled>↪</button>
+          <div class="spacer"></div>
+          <button id="group-export-btn" class="btn btn-ghost btn-sm" data-i18n="groupsExport">Gruppen exportieren</button>
+          <label class="btn btn-ghost btn-sm" for="group-import-input" data-i18n="groupsImport" style="cursor:pointer">Gruppen importieren</label>
+          <input type="file" id="group-import-input" accept=".json" style="display:none" />
+          <button id="group-new-btn" class="btn btn-primary btn-sm" data-i18n="groupsNew">Neue Gruppe</button>
+        </div>
+         <div id="groups-dirty-banner" class="groups-dirty-banner" style="display:none">
+           <span data-i18n="groupsDirtyHint">⚠️ Änderungen werden nicht gespeichert — exportiere die Gruppen, um sie beim nächsten Mal wieder zu laden.</span>
+           <button id="groups-dirty-export-btn" class="btn btn-primary btn-sm" data-i18n="groupsExport">Gruppen exportieren</button>
+         </div>
+        <div id="group-list" class="group-list"></div>
+      </div>
+
+      <!-- Transaction filter chart -->
+      <div class="table-card" id="tx-filter-chart-card">
+        <div class="table-header">
+          <h3><span data-i18n="filterChartHeading">Gefiltertes Ergebnis – Betrag pro Tag</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="filterChartTip">...</span></span>
+            <button class="collapse-btn">▾</button>
+          </h3>
+        </div>
+        <div id="tx-filter-chart-hint" class="filter-chart-hint" data-i18n="filterChartHint">Filter anwenden, um den Tagesverlauf anzuzeigen.</div>
+        <div id="tx-filter-chart-wrap" class="chart-wrap" style="display:none;padding:1rem 1.25rem">
+          <canvas id="tx-filter-chart" height="80"></canvas>
+        </div>
+      </div>
+
+      <div class="table-card" id="tx-month-chart-card" data-pdf-section="chart-month-amount">
+        <div class="table-header">
+          <h3><span data-i18n="monthChartHeading">Betrag pro Monat</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="monthChartTip">...</span></span>
+            <button class="collapse-btn">▾</button></h3>
+          <div class="chart-mode-toggle">
+            <button id="month-chart-bar-btn" class="chart-mode-btn active" data-mode="bar" title="Balkendiagramm">▥</button>
+            <button id="month-chart-stack-btn" class="chart-mode-btn" data-mode="stacked" title="Gestapelt nach Gruppe">⊟</button>
+          </div>
+        </div>
+        <div id="tx-month-chart-wrap" class="chart-wrap" style="padding:1rem 1.25rem">
+          <canvas id="tx-month-chart" height="80"></canvas>
+        </div>
+      </div>
+
+      <!-- Transaction table -->
+      <div class="table-card" id="tx-table-card" data-pdf-section="tx-table">
+        <div class="table-header">
+          <h3><span data-i18n="tableHeading">Transaktionen</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="tableTip">...</span></span>
+            <button class="collapse-btn">▾</button></h3>
+          <button id="reset-table-filters-btn" class="reset-filters-btn" data-i18n="resetFilters">Zurücksetzen</button>
+          <button id="export-csv-btn" class="btn btn-ghost btn-sm" data-i18n="tableExportCsv">📥 CSV</button>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="table-search" data-i18n="tableSearch" data-i18n-attr="placeholder" placeholder="Empfänger, Verwendungszweck suchen…" />
+            <button id="search-case-btn" class="search-case-btn" title="Groß-/Kleinschreibung beachten">Aa</button>
+            <button id="search-regex-btn" class="search-regex-btn" title="Regulären Ausdruck verwenden">.*</button>
+          </div>
+          <div class="filter-group group-filter-wrap" id="group-filter-wrap">
+            <button class="group-filter-toggle" id="group-filter-toggle" data-i18n="groupsFilterAll">Alle Gruppen</button>
+            <div class="group-filter-dropdown" id="group-filter-dropdown" style="display:none">
+              <label class="group-filter-option">
+                <input type="checkbox" id="gf-none" value="__none__" />
+                <span data-i18n="groupsFilterNone">Ohne Gruppe</span>
+              </label>
+              <div id="group-filter-list"></div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <select id="type-filter">
+              <option value="all"     data-i18n="allTypes">Alle Typen</option>
+              <option value="income"  data-i18n="incomeOnly">Nur Einnahmen</option>
+              <option value="expense" data-i18n="expenseOnly">Nur Ausgaben</option>
+            </select>
+          </div>
+          <div class="filter-group month-filter-wrap" id="month-filter-wrap">
+            <button class="group-filter-toggle" id="month-filter-toggle" data-i18n="allMonths">Alle Monate</button>
+            <div class="group-filter-dropdown" id="month-filter-dropdown" style="display:none">
+              <div id="month-filter-list"></div>
+            </div>
+          </div>
+          <div class="filter-group">
+            <select id="amount-preset-filter">
+              <option value="0" data-i18n="amountAll">Alle Beträge</option>
+              <option value="100">&gt; 100 €</option>
+              <option value="1000">&gt; 1.000 €</option>
+              <option value="3000">&gt; 3.000 €</option>
+              <option value="5000">&gt; 5.000 €</option>
+              <option value="10000">&gt; 10.000 €</option>
+            </select>
+          </div>
+          <div class="filter-group amount-wrap">
+            <span class="amount-icon">€</span>
+            <input type="number" id="amount-min-filter" data-i18n="amountMin" data-i18n-attr="placeholder" placeholder="Min." min="0" step="1" />
+          </div>
+          <div class="spacer"></div>
+        </div>
+        <div class="group-filter-chips-bar" id="group-filter-chips-bar" style="display:none">
+          <div class="group-filter-chips" id="group-filter-chips"></div>
+        </div>
+        <div class="group-filter-chips-bar" id="month-filter-chips-bar" style="display:none">
+          <div class="group-filter-chips" id="month-filter-chips"></div>
+        </div>
+        <div class="table-footer table-footer-top">
+          <span id="tx-count-top"></span>
+          <div class="pagination" id="pagination-top"></div>
+        </div>
+        <div class="table-wrap">
+          <table id="tx-table">
+            <thead>
+              <tr>
+                <th data-col="date"><span data-i18n="tableDate">Datum</span> <span class="sort-icon">↕</span></th>
+                <th data-col="recipient" data-i18n="tablePayee">Empfänger</th>
+                <th data-i18n="tablePurpose">Verwendungszweck</th>
+                <th data-i18n="tableType">Typ</th>
+                <th data-col="amount" style="text-align:right"><span data-i18n="tableAmount">Betrag</span> <span class="sort-icon">↕</span></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tx-tbody"></tbody>
+            <tfoot id="tx-tfoot"></tfoot>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tx-count"></span>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+
+    </div><!-- /#dashboard -->
+  </main>
+
+</div><!-- /#app -->
+
+<!-- Upload new file button (fixed, shown after file loaded) -->
+<button class="upload-new-btn" id="upload-new-btn" style="display:none" data-i18n="loadNewFile">
+  📂 Neue Datei laden
+</button>
+
+<!-- Transaction detail popover -->
+<div id="tx-detail-popover" class="tx-detail-popover" style="display:none">
+  <div class="tx-detail-inner" id="tx-detail-inner"></div>
+</div>
+
+<!-- Group context menu (floating popover) -->
+<div id="group-ctx-menu" class="group-ctx-menu" style="display:none">
+  <div class="group-ctx-value" id="group-ctx-value"></div>
+  <div class="group-ctx-list" id="group-ctx-list"></div>
+  <button class="group-ctx-new" id="group-ctx-new">＋ <span data-i18n="groupsNew">Neue Gruppe</span></button>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+  // Show/hide the floating button based on dashboard visibility
+  const obs = new MutationObserver(() => {
+    const dash = document.getElementById('dashboard');
+    const btn = document.getElementById('upload-new-btn');
+    if (dash && btn) btn.style.display = dash.style.display === 'flex' ? 'block' : 'none';
+  });
+  obs.observe(document.getElementById('dashboard'), { attributes: true, attributeFilter: ['style'] });
+</script>
+
+<footer class="site-footer">
+  <span>© 2026 Marcel Sauer</span>
+  <span class="site-footer-sep">·</span>
+  <a href="impressum.html" data-i18n="footerImprint">Impressum</a>
+  <span class="site-footer-sep">·</span>
+  <a href="datenschutz.html" data-i18n="footerPrivacy">Datenschutz</a>
+  <span class="site-footer-sep">·</span>
+  <span><span data-i18n="footerPrivacyNote">🔒 Alle Daten bleiben lokal in deinem Browser</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="footerPrivacyTip">...</span></span></span>
+  <span class="site-footer-sep">·</span>
+  <a class="bmc-btn" href="https://www.paypal.me/marcelsauergmx" target="_blank" rel="noopener" data-i18n="footerDonate">☕ Buy me a coffee</a>
+  <span class="site-footer-sep">·</span>
+  <a class="feature-request-link" href="mailto:kontoeinblick@gmx.de?subject=Kontoeinblick%20Feedback"><span data-i18n="featureRequest">💡 Feature wünschen</span><span class="info-tip" tabindex="0"><span class="info-icon">ⓘ</span><span class="info-tip-text" data-i18n="featureRequestTip">...</span></span></a>
+  <span class="site-footer-sep">·</span>
+  <span class="desktop-hint" data-i18n="desktopHint">💻 Desktop empfohlen</span>
+</footer>
+</body>
+</html>

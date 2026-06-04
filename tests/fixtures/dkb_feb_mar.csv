@@ -1,0 +1,11 @@
+"Girokonto";"DE12500105179999999999"
+"Zeitraum:";"01.02.2025 - 31.03.2025"
+"Kontostand vom 31.03.2025:";"2.345,67 €"
+
+"Buchungsdatum";"Wertstellung";"Status";"Zahlungspflichtige*r";"Zahlungsempfänger*in";"Verwendungszweck";"Umsatztyp";"IBAN";"Betrag (€)";"Gläubiger-ID";"Mandatsreferenz";"Kundenreferenz"
+"10.02.2025";"10.02.2025";"Lastschrift";"Supermarkt GmbH";;"Lebensmittel";"Sonstiges";"DE11111111111111111111";"-92,15";"DE00ZZZ00000000000";"MANDAT001";"REF002"
+"20.02.2025";"20.02.2025";"Lastschrift";"Stadtwerke AG";;"Strom Februar";"Sonstiges";"DE33333333333333333333";"-65,00";"DE00ZZZ00000000001";"MANDAT002";"REF003"
+"03.03.2025";"03.03.2025";"Gutschrift";;"ACME Corp";"Gehalt März";"Sonstiges";"DE99999999999999999999";"2.500,00";;"";
+"07.03.2025";"07.03.2025";"Lastschrift";"Supermarkt GmbH";;"Lebensmittel";"Sonstiges";"DE11111111111111111111";"-112,40";"DE00ZZZ00000000000";"MANDAT001";"REF004"
+"15.03.2025";"15.03.2025";"Lastschrift";"Vermieter KG";;"Miete März";"Sonstiges";"DE22222222222222222222";"-1.200,00";;"";
+"25.03.2025";"25.03.2025";"Gutschrift";;"Versicherung AG";;"Rückzahlung";"Sonstiges";"DE44444444444444444444";"150,00";;"";

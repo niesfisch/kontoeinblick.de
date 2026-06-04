@@ -1,0 +1,7 @@
+"Girokonto";"DE12 3456 7890 1234 5678 90"
+"Zeitraum:";"01.01.2025 - 31.01.2025"
+"Kontostand vom 31.01.2025:";"1.000,00 €"
+
+"Buchungsdatum";"Wertstellung";"Status";"Zahlungspflichtige*r";"Zahlungsempfänger*in";"Verwendungszweck";"Umsatztyp";"IBAN";"Betrag (€)";"Gläubiger-ID";"Mandatsreferenz";"Kundenreferenz"
+"10.01.2025";"10.01.2025";"Gebucht";"";"Café "Zum Wohl"";"Kaffee und Kuchen";"Lastschrift";"DE00123456789012345678";"-8,50";"";"";"2025011001"
+"20.01.2025";"20.01.2025";"Gebucht";"Firma; Semicolon GmbH";"";"Rechnung 2025/001; Beratung";"Gutschrift";"DE00111111111111111111";"1.200,00";"";"";"INV-001"

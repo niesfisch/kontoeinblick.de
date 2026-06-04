@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/parser.test.mjs tests/merge.test.mjs",
+    "build": "node build.mjs",
+    "upload": "node upload.mjs"
+  }
+}

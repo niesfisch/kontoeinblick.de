@@ -1,0 +1,16 @@
+Umsatzanzeige;Datei erstellt am: 01.06.2026
+
+IBAN;DE11 2222 3333 4444 5555 66
+Kontoname;Girokonto
+Bank;ING
+Kunde;Erika Musterfrau
+Zeitraum;15.03.2025 - 15.03.2025
+Saldo;250,00;EUR
+
+Sortierung;Datum absteigend
+
+In der CSV-Datei finden Sie alle bereits gebuchten Umsätze.
+
+Buchung;Wertstellungsdatum;Auftraggeber/Empfänger;Buchungstext;Verwendungszweck;Saldo;Währung;Betrag;Währung
+15.03.2025;15.03.2025;;Überweisung;Miete März 2025;250,00;EUR;-800,00;EUR
+15.03.2025;15.03.2025;ARBEITGEBER GMBH;Gehalt;Gehalt März 2025;1.050,00;EUR;2.500,00;EUR

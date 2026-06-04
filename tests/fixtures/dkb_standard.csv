@@ -1,0 +1,10 @@
+"Girokonto";"DE12 3456 7890 1234 5678 90"
+"Zeitraum:";"01.01.2025 - 31.03.2025"
+"Kontostand vom 31.03.2025:";"2.847,63 €"
+
+"Buchungsdatum";"Wertstellung";"Status";"Zahlungspflichtige*r";"Zahlungsempfänger*in";"Verwendungszweck";"Umsatztyp";"IBAN";"Betrag (€)";"Gläubiger-ID";"Mandatsreferenz";"Kundenreferenz"
+"02.01.2025";"02.01.2025";"Gebucht";"";"REWE Markt GmbH";"Einkauf Lebensmittel";"Lastschrift";"DE98765432109876543210";"-67,43";"";"";"2025010201"
+"03.01.2025";"03.01.2025";"Gebucht";"Mustermann GmbH";"";"Gehalt Januar 2025";"Gutschrift";"DE11111111111111111111";"2.850,00";"";"";"GEHALT-2025-01"
+"05.01.2025";"05.01.2025";"Gebucht";"";"Spotify AB";"Spotify Premium";"Lastschrift";"SE1212000000012171003989";"-9,99";"SE59ZZZ09368111746";"SPOTIFY-001";"2025010502"
+"01.02.2025";"01.02.2025";"Gebucht";"";"Stadtwerke GmbH";"Strom Februar 2025";"Lastschrift";"DE21200400601234567891";"-89,00";"DE98ZZZ09999999999";"MW-2025-02";"2025020101"
+"28.02.2025";"28.02.2025";"Gebucht";"Arbeitgeber AG";"";"Gehalt Februar 2025";"Gutschrift";"DE22222222222222222222";"2.850,00";"";"";"GEHALT-2025-02"

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "g-supermarkt",
+    "name": "Supermarkt",
+    "color": "#16a34a",
+    "rules": [
+      { "id": "r-rewe", "field": "payee", "op": "contains", "value": "REWE", "caseSensitive": false },
+      { "id": "r-aldi", "field": "payee", "op": "contains", "value": "ALDI", "caseSensitive": false },
+      { "id": "r-lidl", "field": "payee", "op": "contains", "value": "Lidl", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-baeckerei",
+    "name": "Bäckerei",
+    "color": "#d97706",
+    "rules": [
+      { "id": "r-baeckerei", "field": "payee", "op": "contains", "value": "Bäckerei", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-tanken",
+    "name": "Tanken",
+    "color": "#ea580c",
+    "rules": [
+      { "id": "r-shell", "field": "payee", "op": "contains", "value": "Shell", "caseSensitive": false },
+      { "id": "r-aral", "field": "payee", "op": "contains", "value": "Aral", "caseSensitive": false },
+      { "id": "r-tankstelle", "field": "payee", "op": "contains", "value": "Tankstelle", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-streaming",
+    "name": "Streaming & Abos",
+    "color": "#7c3aed",
+    "rules": [
+      { "id": "r-spotify", "field": "payee", "op": "contains", "value": "Spotify", "caseSensitive": false },
+      { "id": "r-netflix", "field": "payee", "op": "contains", "value": "Netflix", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-wohnen",
+    "name": "Wohnen",
+    "color": "#0891b2",
+    "rules": [
+      { "id": "r-miete", "field": "any", "op": "contains", "value": "Miete", "caseSensitive": false },
+      { "id": "r-stadtwerke", "field": "payee", "op": "contains", "value": "Stadtwerke", "caseSensitive": false },
+      { "id": "r-gez", "field": "payee", "op": "contains", "value": "GEZ", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-drogerie",
+    "name": "Drogerie",
+    "color": "#db2777",
+    "rules": [
+      { "id": "r-dm", "field": "payee", "op": "contains", "value": "dm-drogerie", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-restaurant",
+    "name": "Essen gehen",
+    "color": "#dc2626",
+    "rules": [
+      { "id": "r-restaurant", "field": "payee", "op": "contains", "value": "Restaurant", "caseSensitive": false },
+      { "id": "r-cafe", "field": "payee", "op": "contains", "value": "Café", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-sport",
+    "name": "Sport",
+    "color": "#65a30d",
+    "rules": [
+      { "id": "r-fitness", "field": "payee", "op": "contains", "value": "Fitness First", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-mobil",
+    "name": "Mobilität & Parken",
+    "color": "#6366f1",
+    "rules": [
+      { "id": "r-vodafone", "field": "payee", "op": "contains", "value": "Vodafone", "caseSensitive": false },
+      { "id": "r-parkhaus", "field": "payee", "op": "contains", "value": "Parkhaus", "caseSensitive": false }
+    ]
+  },
+  {
+    "id": "g-shopping",
+    "name": "Online Shopping",
+    "color": "#0d9488",
+    "rules": [
+      { "id": "r-amazon", "field": "payee", "op": "contains", "value": "Amazon", "caseSensitive": false },
+      { "id": "r-zalando", "field": "payee", "op": "contains", "value": "Zalando", "caseSensitive": false },
+      { "id": "r-ikea", "field": "payee", "op": "contains", "value": "IKEA", "caseSensitive": false }
+    ]
+  }
+]
