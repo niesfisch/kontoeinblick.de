@@ -173,12 +173,18 @@ const TRANSLATIONS = {
     featureRequestTitle: '💡 Feature-Wünsche & Feedback',
     featureRequestDesc: 'Du hast eine Idee oder vermisst eine Funktion? Schreib mir eine E-Mail – ich freue mich über Vorschläge und nehme jedes Feedback ernst.',
 
+    // Open source
+    featureOpenSourceTitle: 'Open Source',
+    featureOpenSourceDesc: 'Kontoeinblick ist Open Source. Der vollständige Quellcode ist auf GitHub verfügbar.',
+    featureOpenSourceLink: 'Quellcode auf GitHub',
+
     // Footer
     footerImprint: 'Impressum',
     footerPrivacy: 'Datenschutz',
     footerPrivacyNote: '🔒 Alle Daten bleiben lokal in deinem Browser',
     footerPrivacyTip: 'Kontoeinblick verarbeitet alle hochgeladenen CSV-Dateien ausschließlich im Arbeitsspeicher deines Browsers. Es werden keine Daten an Server übertragen, gespeichert oder analysiert. Nach dem Schließen des Tabs oder Neuladen einer Datei werden alle Daten verworfen. Weder ich als Betreiber noch Dritte haben Zugriff auf deine Finanzdaten.',
     footerDonate: '☕ Kaffee spendieren',
+    footerSource: 'Quellcode',
     headerDonate: '☕',
     headerDonateTip: 'Unterstützung via PayPal – Kaffee spendieren',
     langDe: 'Deutsch',
@@ -390,12 +396,18 @@ const TRANSLATIONS = {
     featureRequestTitle: '💡 Feature Requests & Feedback',
     featureRequestDesc: 'Have an idea or missing a feature? Drop me an email – I\'d love to hear suggestions and take every feedback seriously.',
 
+    // Open source
+    featureOpenSourceTitle: 'Open Source',
+    featureOpenSourceDesc: 'Kontoeinblick is open source. The full source code is available on GitHub.',
+    featureOpenSourceLink: 'Source code on GitHub',
+
     // Footer
     footerImprint: 'Legal Notice',
     footerPrivacy: 'Privacy Policy',
     footerPrivacyNote: '🔒 All data stays local in your browser',
     footerPrivacyTip: 'Kontoeinblick processes all uploaded CSV files exclusively in your browser\'s memory. No data is transmitted to, stored on, or analysed by any server. All data is discarded when you close the tab or load a new file. Neither I as the operator nor any third party has access to your financial data.',
     footerDonate: '☕ Buy me a coffee',
+    footerSource: 'Source Code',
     headerDonate: '☕',
     headerDonateTip: 'Support via PayPal – buy me a coffee',
     langDe: 'German',
