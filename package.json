@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/parser.test.mjs tests/merge.test.mjs",
+    "all": "node build.mjs && node upload.mjs",
     "build": "node build.mjs",
     "upload": "node upload.mjs"
   }

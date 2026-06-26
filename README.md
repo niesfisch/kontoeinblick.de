@@ -48,6 +48,9 @@ npm install
 # Build single-file dist
 npm run build          # produces dist/index.html, dist/impressum.html, dist/datenschutz.html
 
+# Build + upload in one step
+npm run all            # runs build then upload
+
 # Deploy to production
 # Create ~/.env with: FTP_SERVER, FTP_USER, FTP_PASSWORD
 npm run upload

@@ -183,10 +183,7 @@ const TRANSLATIONS = {
     footerPrivacy: 'Datenschutz',
     footerPrivacyNote: '🔒 Alle Daten bleiben lokal in deinem Browser',
     footerPrivacyTip: 'Kontoeinblick verarbeitet alle hochgeladenen CSV-Dateien ausschließlich im Arbeitsspeicher deines Browsers. Es werden keine Daten an Server übertragen, gespeichert oder analysiert. Nach dem Schließen des Tabs oder Neuladen einer Datei werden alle Daten verworfen. Weder ich als Betreiber noch Dritte haben Zugriff auf deine Finanzdaten.',
-    footerDonate: '☕ Kaffee spendieren',
     footerSource: 'Quellcode',
-    headerDonate: '☕',
-    headerDonateTip: 'Unterstützung via PayPal – Kaffee spendieren',
     langDe: 'Deutsch',
     langEn: 'English',
 
@@ -406,10 +403,7 @@ const TRANSLATIONS = {
     footerPrivacy: 'Privacy Policy',
     footerPrivacyNote: '🔒 All data stays local in your browser',
     footerPrivacyTip: 'Kontoeinblick processes all uploaded CSV files exclusively in your browser\'s memory. No data is transmitted to, stored on, or analysed by any server. All data is discarded when you close the tab or load a new file. Neither I as the operator nor any third party has access to your financial data.',
-    footerDonate: '☕ Buy me a coffee',
     footerSource: 'Source Code',
-    headerDonate: '☕',
-    headerDonateTip: 'Support via PayPal – buy me a coffee',
     langDe: 'German',
     langEn: 'English',
 
