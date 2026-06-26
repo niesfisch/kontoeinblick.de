@@ -443,6 +443,24 @@ describe('Sparkasse parse()', () => {
   });
 });
 
+describe('Sparkasse meta extraction', () => {
+  test('meta.iban uses Auftragskonto (account owner), not the counterparty IBAN', () => {
+    const csv = [
+      '"Auftragskonto";"Buchungstag";"Valutadatum";"Buchungstext";"Verwendungszweck";"Glaeubiger ID";"Mandatsreferenz";"Kundenreferenz (End-to-End)";"Sammlerreferenz";"Lastschrift Ursprungsbetrag";"Auslagenersatz Ruecklastschrift";"Beguenstigter/Zahlungspflichtiger";"Kontonummer/IBAN";"BIC (SWIFT-Code)";"Betrag";"Waehrung";"Info"',
+      '"DE00OWNER00000000000";"05.03.26";"05.03.26";"KARTENZAHLUNG";"Test";;;;;;;"star Tankstelle";"DE99COUNTERPARTY9999";"HELADEFFXXX";"-50,01";"EUR";"Umsatz gebucht"',
+    ].join('\n');
+    const result = sparkasse.parse(cleanLines(csv));
+    assert.equal(result.meta.iban, 'DE00OWNER00000000000');
+    // The transaction-level IBAN remains the counterparty's
+    assert.equal(result.transactions[0].iban, 'DE99COUNTERPARTY9999');
+  });
+
+  test('meta.period is derived from the transaction date range', () => {
+    const result = sparkasse.parse(cleanLines(fixture('sparkasse_standard.csv')));
+    assert.equal(result.meta.period, '03.03.2026 - 05.03.2026');
+  });
+});
+
 describe('Sparkasse detect()', () => {
   test('detects Sparkasse CSV by header', () => {
     const lines = cleanLines(fixture('sparkasse_standard.csv'));

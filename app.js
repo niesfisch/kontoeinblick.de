@@ -255,6 +255,7 @@ function initDashboard() {
 
   // Update header
   balanceBadge.textContent = meta.balanceRaw || '';
+  balanceBadge.style.display = meta.balanceRaw ? '' : 'none';
   headerMeta.querySelector('#header-iban').textContent = meta.iban || '';
   headerMeta.querySelector('#header-period').textContent = meta.period || '';
 
@@ -1061,12 +1062,13 @@ function renderKPIs() {
   const avgMonthlyExpense = calcAvgMonthly(txs, false);
   const avgMonthlyIncome = calcAvgMonthly(txs, true);
   const txCount = txs.length;
-  const balance = state.raw.meta.balance || 0;
+  const rawBalance = state.raw.meta.balance;
+  const hasBalance = rawBalance !== undefined && rawBalance !== null;
 
   setKPI('kpi-income',  fmt(totalIncome),           'income',                          `${t('kpiAvgMonth')}: ${fmt(avgMonthlyIncome)}`);
   setKPI('kpi-expense', fmt(Math.abs(totalExpense)), 'expense',                         `${t('kpiAvgMonth')}: ${fmt(Math.abs(avgMonthlyExpense))}`);
   setKPI('kpi-net',     fmt(net),                   net >= 0 ? 'income' : 'expense',   net >= 0 ? t('kpiPositive') : t('kpiNegative'));
-  setKPI('kpi-balance', fmt(balance),               'neutral',                         `${t('kpiAsOf')} ${state.raw.meta.balanceDate || '—'}`);
+  setKPI('kpi-balance', hasBalance ? fmt(rawBalance) : '—', 'neutral',                  `${t('kpiAsOf')} ${state.raw.meta.balanceDate || '—'}`);
   setKPI('kpi-txcount', txCount.toString(),         'neutral',                         t('kpiTransactions'));
   const savingsRate = totalIncome > 0 ? (net / totalIncome * 100) : 0;
   setKPI('kpi-savings', savingsRate.toFixed(1) + '%', savingsRate >= 0 ? 'income' : 'expense', t('kpiSavingsRate'));

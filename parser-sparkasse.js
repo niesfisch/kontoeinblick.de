@@ -13,7 +13,7 @@
  * No separate metadata block — just a header and data rows.
  */
 
-import { parseGermanNumber, parseGermanDate, splitCSVLine, makeTx } from './parser-utils.js';
+import { parseGermanNumber, parseGermanDate, splitCSVLine, makeTx, periodFromTransactions } from './parser-utils.js';
 
 export const BANK_ID   = 'sparkasse';
 export const BANK_NAME = 'Sparkasse';
@@ -30,6 +30,7 @@ export function detect(lines) {
 export function parse(lines) {
   const meta = { bank: BANK_ID, bankName: BANK_NAME };
 
+  const COL_ACCOUNT  = 0;  // Auftragskonto (account owner IBAN)
   const COL_BOOKING  = 1;  // Buchungstag
   const COL_VALDATE  = 2;  // Valutadatum
   const COL_TYPE     = 3;  // Buchungstext
@@ -38,7 +39,7 @@ export function parse(lines) {
   const COL_MANDATE  = 6;  // Mandatsreferenz
   const COL_CUSTREF  = 7;  // Kundenreferenz (End-to-End)
   const COL_PAYEE    = 11; // Beguenstigter/Zahlungspflichtiger
-  const COL_IBAN     = 12; // Kontonummer/IBAN
+  const COL_IBAN     = 12; // Kontonummer/IBAN (counterparty)
   const COL_AMOUNT   = 14; // Betrag
 
   let headerIdx = -1;
@@ -54,9 +55,9 @@ export function parse(lines) {
     const f = splitCSVLine(line);
     if (f.length <= COL_AMOUNT) continue;
 
-    // Extract IBAN from first data row for meta
-    if (meta.iban === undefined && f[COL_IBAN]) {
-      meta.iban = f[COL_IBAN].trim();
+    // Extract account IBAN from first data row (Auftragskonto)
+    if (meta.iban === undefined && f[COL_ACCOUNT]) {
+      meta.iban = f[COL_ACCOUNT].trim();
     }
 
     const bookingDate = f[COL_BOOKING];
@@ -85,5 +86,10 @@ export function parse(lines) {
   }
 
   transactions.sort((a, b) => a.date - b.date);
+
+  // Sparkasse exports carry no metadata block, so derive the period from the
+  // transaction date range (the format has no running balance to report).
+  meta.period = periodFromTransactions(transactions);
+
   return { meta, transactions };
 }

@@ -16,6 +16,26 @@ export function parseGermanDate(str) {
   return new Date(year, parseInt(parts[1]) - 1, parseInt(parts[0]));
 }
 
+/** Format a Date as DD.MM.YYYY. */
+export function formatGermanDate(date) {
+  if (!(date instanceof Date) || isNaN(date)) return '';
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  return `${dd}.${mm}.${date.getFullYear()}`;
+}
+
+/**
+ * Build a "DD.MM.YYYY - DD.MM.YYYY" period string from the date range of
+ * already-sorted (ascending) transactions. Returns '' when empty.
+ */
+export function periodFromTransactions(transactions) {
+  if (!transactions || transactions.length === 0) return '';
+  const first = formatGermanDate(transactions[0].date);
+  const last  = formatGermanDate(transactions[transactions.length - 1].date);
+  if (!first || !last) return '';
+  return first === last ? first : `${first} - ${last}`;
+}
+
 export function splitCSVLine(line) {
   const result = [];
   let inQuotes = false;
